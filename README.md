@@ -22,3 +22,4 @@ Hi, I'm **John Kevin Morera**, an IT support engineer moving into workflow and A
 > No API keys or secrets are stored in this repository. Credentials must be added in your own n8n instance.
 
 
+<img width="1496" height="468" alt="Image" src="https://github.com/user-attachments/assets/5e681617-eb1c-4116-9975-228849d09e6c" />
