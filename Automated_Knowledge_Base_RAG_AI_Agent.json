@@ -1,0 +1,549 @@
+{
+  "name": "Automated Knowledge Base & RAG AI Agent (Enhanced)",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1-Q0yrqi-YfjaLUUrPEVvM9_vRVgobvFf",
+          "mode": "list",
+          "cachedResultName": "RAG Agent",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1-Q0yrqi-YfjaLUUrPEVvM9_vRVgobvFf"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1536,
+        -304
+      ],
+      "id": "9fcbd57e-9536-42a0-a697-ba5cb6a2863d",
+      "name": "Google Drive Trigger (Created)"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1-Q0yrqi-YfjaLUUrPEVvM9_vRVgobvFf",
+          "mode": "list",
+          "cachedResultName": "RAG Agent",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1-Q0yrqi-YfjaLUUrPEVvM9_vRVgobvFf"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1536,
+        -112
+      ],
+      "id": "0f418b68-f14e-4978-ae6a-74c896dc137a",
+      "name": "Google Drive Trigger (Updated)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "file_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "a2",
+              "name": "file_name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "a3",
+              "name": "source_url",
+              "value": "={{ $json.webViewLink }}",
+              "type": "string"
+            },
+            {
+              "id": "a4",
+              "name": "uploaded_at",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1312,
+        -224
+      ],
+      "id": "391adad7-939e-4e58-aad8-dd746f1c56f6",
+      "name": "Prepare file info"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://YOUR-INDEX-HOST.svc.YOUR-REGION.pinecone.io/vectors/delete",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Api-Key",
+              "value": "YOUR_PINECONE_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ namespace: 'ragagent', filter: { file_id: { '$eq': $json.file_id } } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1104,
+        -224
+      ],
+      "id": "b915d8c7-0878-497b-93ce-1e130ee8a3ad",
+      "name": "Delete old vectors (optional)",
+      "disabled": true,
+      "notes": "Disabled by default. Delete-by-metadata-filter only works on pod-based Pinecone indexes. Enable and fill in host + API key if that's your setup."
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.file_id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -880,
+        -224
+      ],
+      "id": "08a8d904-abb8-41d5-97eb-64bc33d17010",
+      "name": "Download file"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ ['application/pdf','application/vnd.openxmlformats-officedocument.wordprocessingml.document','text/plain','text/markdown'].includes($binary.data.mimeType) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -656,
+        -224
+      ],
+      "id": "5e502245-a81c-4c8c-92bc-1a79e9084917",
+      "name": "Supported file type?"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "n8nragagent",
+          "mode": "list",
+          "cachedResultName": "n8nragagent"
+        },
+        "options": {
+          "pineconeNamespace": "ragagent"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        -416,
+        -240
+      ],
+      "id": "194eff44-b3ab-4e84-8974-e65650c74d89",
+      "name": "Pinecone Vector Store (Insert)"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -416,
+        16
+      ],
+      "id": "088275a8-4fa6-4fc2-a3c9-313da7614d68",
+      "name": "Embeddings (Ingest)"
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "file_id",
+                "value": "={{ $('Prepare file info').item.json.file_id }}"
+              },
+              {
+                "name": "file_name",
+                "value": "={{ $('Prepare file info').item.json.file_name }}"
+              },
+              {
+                "name": "source_url",
+                "value": "={{ $('Prepare file info').item.json.source_url }}"
+              },
+              {
+                "name": "uploaded_at",
+                "value": "={{ $('Prepare file info').item.json.uploaded_at }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -448,
+        160
+      ],
+      "id": "e1155537-5b8f-4edd-8f45-916acba3df04",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkSize": 900,
+        "chunkOverlap": 120,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        -448,
+        272
+      ],
+      "id": "8a67e9d8-6860-4cf4-8813-40351facf6bf",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "public": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        -80,
+        -192
+      ],
+      "id": "b57982ae-7a6a-4e9d-a2b4-7a043fc18f05",
+      "name": "When chat message received",
+      "webhookId": "8e1cd982-0de0-4dfe-8b81-c20e3a176ab3"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=You are an expert iOS 18 assistant. Your sole purpose is to answer questions using strictly and exclusively the iOS 18 feature documentation retrieved from the knowledge base tool.\n\n### Core Rules\n1. Always Retrieve First: For EVERY question about iOS 18, call the knowledge base tool before answering. Never answer from memory.\n2. Absolute Strict Grounding: Use only the retrieved text. Never add, infer, or extrapolate features, settings, or details that are not explicitly written in it.\n3. Zero Outside Knowledge: Ignore all pre-trained knowledge about Apple, iOS 18, or general technology. If a detail is not retrieved, it does not exist for your answers.\n4. Handling Missing Data: If the retrieved documents cannot fully support an answer, say: \"That information isn't available in the current iOS 18 documentation.\"\n5. Ambiguous Questions: If the question is too vague to search well (e.g. \"how do I turn it on?\"), ask ONE short clarifying question instead of guessing.\n6. Conciseness & Structure: Keep answers between 2 and 5 sentences. Use bullet points or short paragraphs when listing multiple items.\n7. Citations: End every grounded answer with a line in the form \"Source: <file_name>\" using the file_name metadata of the chunks you used. If several files were used, list them separated by commas. Do not add a source line to \"not available\" or clarifying replies.\n\n### Objective\nDeliver factual, direct, concise answers based 100% on the retrieved iOS 18 documentation, with zero additions or speculation."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        176,
+        -192
+      ],
+      "id": "653e4b4e-78ef-4c63-bd1e-4ae23ceeed5d",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        128,
+        80
+      ],
+      "id": "b7630e2d-01d6-405e-883a-0fd7a22f1a43",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        288,
+        80
+      ],
+      "id": "f61da78f-7db4-47bf-bb26-d48b7fcf8cf5",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Searches the iOS 18 documentation knowledge base. Use it for EVERY question about iOS 18 features, settings, or changes. Returns the most relevant passages along with their file_name metadata.",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "n8nragagent",
+          "mode": "list",
+          "cachedResultName": "n8nragagent"
+        },
+        "topK": 6,
+        "options": {
+          "pineconeNamespace": "ragagent"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        464,
+        80
+      ],
+      "id": "0342ffc1-045a-4073-ba84-df9e5eb79243",
+      "name": "Pinecone Docs Tool"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        464,
+        288
+      ],
+      "id": "2906f58e-db56-44d1-92cd-748d08dc92da",
+      "name": "Embeddings (Query)"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Drive Trigger (Created)": {
+      "main": [
+        [
+          {
+            "node": "Prepare file info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Trigger (Updated)": {
+      "main": [
+        [
+          {
+            "node": "Prepare file info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare file info": {
+      "main": [
+        [
+          {
+            "node": "Delete old vectors (optional)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete old vectors (optional)": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Supported file type?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supported file type?": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store (Insert)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings (Ingest)": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store (Insert)",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store (Insert)",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Docs Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings (Query)": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Docs Tool",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "95b142c8-e40e-4418-90a0-7684df45b28e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "dd572dd3503aa6824d451fe464aff5426f5690af469595c47970c73201f4162b"
+  },
+  "nodeGroups": [],
+  "id": "2GDVw05c5m2iEonw",
+  "tags": []
+}
