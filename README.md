@@ -11,106 +11,54 @@ Hi, I'm **John Kevin Morera**, an IT Support Engineer transitioning into workflo
  
 ---
  
-# Featured Project: Knowledge Base & RAG AI Agent
- 
-An automated Retrieval-Augmented Generation (RAG) system that keeps a knowledge base continuously updated and accessible through an AI chat interface.
- 
-### Key Features
- 
-#### 📥 Automated Document Ingestion
-- Detects new or updated files in Google Drive.
-- Downloads and processes documents automatically.
-- Generates embeddings using OpenAI.
-- Stores vectorized data in Pinecone for semantic search.
- 
-#### 🤖 AI-Powered Chat Agent
-- Searches the Pinecone vector database for relevant information.
-- Retrieves context from indexed documentation.
-- Generates accurate responses grounded in the knowledge base.
-- Demonstrated using **iOS 18 documentation** as the source material.
- 
-### Workflow Overview
- 
-1. Google Drive detects a new or modified file.
-2. n8n downloads and processes the document.
-3. OpenAI generates embeddings.
-4. Pinecone stores vector data.
-5. The AI Agent retrieves relevant context.
-6. Users receive context-aware answers through chat.
- 
-### Screenshot
- 
-![Knowledge Base & RAG AI Agent](https://github.com/user-attachments/assets/5e681617-eb1c-4116-9975-228849d09e6c)
- 
----
- 
-# Featured Project: Real Estate Lead Triage - Gmail to Slack
- 
-An AI-powered workflow that automatically evaluates incoming real estate inquiries and routes qualified leads directly to the sales team.
- 
-### Key Features
- 
-#### 📧 Email Monitoring
-- n8n continuously monitors a Gmail inbox for new messages.
- 
-#### 🧠 AI Lead Classification
-- GPT-4o-mini analyzes incoming emails.
-- Determines if a message is a legitimate real estate lead.
- 
-#### ✅ Lead Qualification
-The workflow extracts and evaluates:
-- Budget range
-- Buying timeline
-- Property preferences
-- Viewing requests
-- Contact details
- 
-#### 🚫 Lead Filtering
-- Filters spam and irrelevant messages.
-- Removes casual inquiries that do not meet lead criteria.
- 
-#### 🔔 Slack Notifications
-- Sends qualified leads to Slack in real time.
-- Provides sales teams with actionable lead information for faster follow-up.
- 
-### Workflow Overview
- 
-1. Gmail receives a new email.
-2. n8n retrieves the message.
-3. AI Agent classifies the inquiry.
-4. Structured output evaluates qualification criteria.
-5. Spam and low-quality leads are filtered out.
-6. Qualified leads are posted to Slack automatically.
- <img width="1132" height="439" alt="Image" src="https://github.com/user-attachments/assets/dc7620cd-af88-43ed-91fa-3556e30fe860" />
----
- 
-## Skills Demonstrated
- 
-- Workflow Automation
-- AI Agent Development
-- Retrieval-Augmented Generation (RAG)
-- Vector Databases
-- Prompt Engineering
-- Email Automation
-- Lead Qualification Systems
-- API Integrations
-- Process Optimization
-- No-Code / Low-Code Solutions
- 
-## Tools & Technologies
- 
-- **n8n**
-- **OpenAI**
-- **Pinecone**
-- **Google Drive API**
-- **Gmail API**
-- **Slack API**
-- **AI Agents**
-- **Vector Search**
-- **Automation Workflows**
- 
----
- 
-## About Me
- 
-I'm an IT Support Engineer with experience in troubleshooting, systems administration, and end-user support. I'm currently expanding into workflow automation and AI-powered solutions
+Featured Projects
+
+Knowledge Base & RAG AI Agent
+
+Automatically processes new and updated Google Drive documents.
+
+Generates OpenAI embeddings and stores them in Pinecone.
+
+Uses an AI Agent to retrieve relevant information and answer questions.
+
+Demonstrated using iOS 18 documentation.
+
+Workflow: Google Drive → Document Processing → OpenAI → Pinecone → AI Agent
+
+Real Estate Lead Triage - Gmail to Slack
+
+Monitors incoming Gmail messages.
+
+Uses GPT-4o-mini to identify and qualify real estate leads.
+
+Evaluates budget, timeline, property interest, and viewing requests.
+
+Filters spam and irrelevant inquiries.
+
+Sends qualified leads to Slack automatically.
+
+Workflow: Gmail → AI Agent → Lead Qualification → Filtering → Slack
+
+Skills & Technologies
+
+n8n Workflow Automation
+
+AI Agents & Prompt Engineering
+
+RAG & Vector Search
+
+OpenAI
+
+Pinecone
+
+Gmail & Google Drive
+
+Slack
+
+API Integrations
+
+Process Automation
+
+About Me
+
+I'm an IT Support Engineer with experience in troubleshooting, systems administration, and end-user support. I'm currently expanding my skills into AI automation and workflow solutions.
