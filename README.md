@@ -110,6 +110,7 @@ The workflow extracts and evaluates:
 - **Automation Workflows**
  
 ---
+<img width="1132" height="439" alt="Image" src="https://github.com/user-attachments/assets/dc7620cd-af88-43ed-91fa-3556e30fe860" />
  
 ## About Me
  
