@@ -7,6 +7,7 @@ Hi, I'm **John Kevin Morera**, an IT support engineer moving into workflow and A
 | Project | What it does | Tools |
 |---|---|---|
 | [Knowledge Base & RAG AI Agent](./knowledge-base-rag-agent) | Automatically ingests documents from Google Drive into a vector database, then answers questions about them through an AI chat agent. | n8n, Google Drive, OpenAI, Pinecone |
+| [Real Estate Lead Triage — Gmail to Slack](https://github.com/DevKev14/jk-n8n-workflows/blob/main/real-estate-lead-triage) | Monitors a Gmail inbox, uses an AI Agent with structured output to classify and qualify real estate leads, then sends qualified leads to Slack while filtering out spam and casual inquiries. | n8n, Gmail, OpenAI GPT-4o-mini, Slack |
 
 ## Featured: Knowledge Base & RAG AI Agent
 
