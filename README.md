@@ -13,8 +13,9 @@ Hi, I'm **John Kevin Morera**, an IT support engineer moving into workflow and A
 
 - **Ingestion:** Google Drive triggers fire when a file is created or updated, the file is downloaded, converted to embeddings, and stored in Pinecone.
 - **Chat agent:** An AI agent searches the Pinecone knowledge base (iOS 18 documentation) and answers questions using retrieved context.
-
+<img width="1496" height="468" alt="Image" src="https://github.com/user-attachments/assets/5e681617-eb1c-4116-9975-228849d09e6c" />
 ## Featured: Real Estate Lead Triage — Gmail to Slack
+
 Email monitoring: n8n polls a Gmail inbox for new incoming emails.
 AI classification: An AI Agent powered by GPT-4o-mini analyzes each email and determines whether it is a real estate lead.
 Lead qualification: Structured output evaluates factors such as budget, buying timeline, property interest, and viewing requests.
@@ -22,4 +23,3 @@ Lead filtering: Spam, irrelevant messages, and casual inquiries are filtered out
 Slack notification: Qualified leads are automatically posted to Slack in real time, giving the sales team the information needed for follow-up.
 
 
-<img width="1496" height="468" alt="Image" src="https://github.com/user-attachments/assets/5e681617-eb1c-4116-9975-228849d09e6c" />
