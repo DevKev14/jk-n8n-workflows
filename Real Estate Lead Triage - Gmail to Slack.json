@@ -1,0 +1,250 @@
+{
+  "name": "Real Estate Lead Triage - Gmail to Slack",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyX",
+              "value": 5,
+              "unit": "minutes"
+            }
+          ]
+        },
+        "filters": {
+          "readStatus": "unread"
+        }
+      },
+      "id": "1550e237-d9b7-4612-bb38-7f23adff89f0",
+      "name": "New Email Received",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -416,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze this email and determine if it is a real estate lead.\n\nFrom: {{ $json.from }}\nSubject: {{ $json.subject }}\nSnippet: {{ $json.snippet }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a real estate lead-qualification assistant screening a real estate agency inbox. For each email, decide (1) isRealEstateLead: whether the email relates to buying, selling, renting, or investing in property, and (2) qualified: true only if the sender shows genuine, actionable intent - such as a stated budget, timeline, specific property interest, or a request to view/schedule - rather than spam, a newsletter, a vague question, or an unrelated message. Extract any lead details you can find. Always explain your reasoning briefly."
+        }
+      },
+      "id": "519bf5d2-f2ed-4750-873d-3e536021f60d",
+      "name": "Classify Real Estate Lead",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -192,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.1
+        }
+      },
+      "id": "ee65c6b3-34ce-4eda-91d9-c67a434e267e",
+      "name": "OpenAI Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -192,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\"isRealEstateLead\":true,\"qualified\":true,\"confidence\":0.9,\"leadName\":\"Jane Buyer\",\"propertyInterest\":\"3-bedroom condo near BGC\",\"budget\":\"15M PHP\",\"timeline\":\"within 2 months\",\"reasoning\":\"Sender explicitly stated a budget, timeline, and requested a viewing\"}"
+      },
+      "id": "43bfa9a0-2e0f-4785-93bd-1a7d2f85fb1f",
+      "name": "Lead Classification Schema",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -48,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.output.qualified }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f9755ce1-e75a-4ec5-a2e8-75beb9052b49",
+      "name": "Is Qualified Lead?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        160,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "<__PLACEHOLDER_VALUE__Slack channel ID to post qualified leads to (e.g. C0123456789)__>"
+        },
+        "text": "=\ud83c\udfe0 *Qualified Real Estate Lead*\n\n*From:* {{ $(\"New Email Received\").item.json.from }}\n*Subject:* {{ $(\"New Email Received\").item.json.subject }}\n\n*Lead Name:* {{ $json.output.leadName }}\n*Property Interest:* {{ $json.output.propertyInterest }}\n*Budget:* {{ $json.output.budget }}\n*Timeline:* {{ $json.output.timeline }}\n\n*Why qualified:* {{ $json.output.reasoning }}",
+        "otherOptions": {}
+      },
+      "id": "7c10d90c-bb4a-4f1d-a587-a7780f9cc19a",
+      "name": "Notify Slack - Qualified Lead",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        384,
+        -64
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ $(\"New Email Received\").item.json.id }}"
+      },
+      "id": "a03adff3-38cd-410e-bec8-8fb62d6cc112",
+      "name": "Mark Email Read (Notified)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        608,
+        -64
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ $(\"New Email Received\").item.json.id }}"
+      },
+      "id": "942ae1ce-61f8-4b9b-87fb-0f12f94eb60b",
+      "name": "Mark Email Read (Not Qualified)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        384,
+        128
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "New Email Received": {
+      "main": [
+        [
+          {
+            "node": "Classify Real Estate Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Real Estate Lead": {
+      "main": [
+        [
+          {
+            "node": "Is Qualified Lead?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Classify Real Estate Lead",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Classification Schema": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Classify Real Estate Lead",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Qualified Lead?": {
+      "main": [
+        [
+          {
+            "node": "Notify Slack - Qualified Lead",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mark Email Read (Not Qualified)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Slack - Qualified Lead": {
+      "main": [
+        [
+          {
+            "node": "Mark Email Read (Notified)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "nodeGroups": [],
+  "tags": []
+}
