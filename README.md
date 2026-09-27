@@ -32,16 +32,6 @@ Hi, I'm **John Kevin Morera**, an IT Support Engineer transitioning into workflo
 <img width="1132" height="439" alt="Image" src="https://github.com/user-attachments/assets/dc7620cd-af88-43ed-91fa-3556e30fe860" />
 ## Skills & Technologies
 
-- n8n Workflow Automation
-- AI Agents & Prompt Engineering
-- RAG & Vector Search
-- OpenAI
-- Pinecone
-- Gmail & Google Drive
-- Slack
-- API Integrations
-- Process Automation
-
 ### AI Customer Support & Booking System (n8n)
 
 - Monitors incoming customer chat messages.
