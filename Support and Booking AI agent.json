@@ -1,0 +1,253 @@
+{
+  "name": "Support and Booking AI agent",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        -352,
+        -32
+      ],
+      "id": "af430c53-2ba0-4e08-8bbd-0c9d87ace986",
+      "name": "When chat message received"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -128,
+        176
+      ],
+      "id": "e20c4a24-df18-4223-a42c-e8ff5b11b97f",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=*Role*\n\nYour name is Kevin, act as a customer support agent for an Italian Restaurant called Bella Vista.\n\nYou are responsible for providing information about the restaurant using the knowledge base system.\n\nPlease ensure the communication style is friendly and on the point.\n\n*Tools*\n\nWhen a customer wants to make a booking, follow these steps:\n\n1. Collect essential details: Customer name, Email Address, Party Size, preferred date and time, and any special requests.\n\n2. Once you have all the details, call the \"Notify Restaurant - New Booking\" tool. This always sends to the restaurant's own inbox (you do not need to provide an email address for this one) \u2014 write a clear subject and an HTML message summarizing the customer name, email, party size, date/time, and any special requests, so restaurant staff can act on it.\n\n3. Then call the \"Send Booking Confirmation to Customer\" tool to email the customer directly at the email address they provided. Write a warm, friendly HTML confirmation that restates their booking details (date, time, party size) and thanks them for choosing Bella Vista.\n\n4. Always call both tools for every booking \u2014 one email goes to the restaurant, a separate email goes to the customer. Never skip either one, and never send the restaurant notification to the customer's address or vice versa.\n\n5. After both emails are sent, let the customer know their booking request has been submitted to the restaurant and that they will receive a confirmation email shortly.\n\n6. When a customer asks to speak with a human, requests human support, or seems frustrated and wants to escalate beyond what you can help with, call the \"Human Support\" tool. This always sends to the restaurant's human support inbox (you do not need to provide an email address for this one) \u2014 write a clear subject and an HTML message summarizing the customer's request and any relevant conversation context, so a staff member can follow up. After sending, let the customer know their request has been forwarded to the team and someone will get back to them shortly.\nAsk for its email and name, so it can contact the customer"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -128,
+        -32
+      ],
+      "id": "00163b46-96e3-4a79-ad3d-555e48dba41a",
+      "name": "Kevin"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -64,
+        544
+      ],
+      "id": "c0ed752b-d368-4cfb-b905-482d2e296a64",
+      "name": "Embeddings OpenAI"
+    },
+    {
+      "parameters": {
+        "sendTo": "restaurant@example.com",
+        "subject": "={{ $fromAI('restaurant_notification_subject', 'Short subject line, e.g. New Booking Request from <customer name>', 'string') }}",
+        "message": "={{ $fromAI('restaurant_notification_message', 'HTML summary of the new booking for restaurant staff: customer name, email, party size, date/time, and any special requests', 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        128
+      ],
+      "id": "9edc6504-e3c0-48ca-9f80-5874aec36df7",
+      "name": "Notify Restaurant - New Booking"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $fromAI('customer_email', 'The email address the customer provided for their booking confirmation', 'string') }}",
+        "subject": "={{ $fromAI('confirmation_subject', 'Short subject line, e.g. Your Booking at Bella Vista is Confirmed', 'string') }}",
+        "message": "={{ $fromAI('confirmation_message', 'HTML confirmation email body for the customer, including booking details (date, time, party size) and a friendly thank-you from Bella Vista', 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "bcc1b0eb-38a2-4600-9f0c-69d7af79cfd0",
+      "name": "Send Booking Confirmation to Customer",
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        336,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "support@example.com",
+        "subject": "={{ $fromAI('human_support_subject', 'Short subject line, e.g. Human Support Requested by <customer name>', 'string') }}",
+        "message": "={{ $fromAI('human_support_message', 'HTML summary of the customer request and relevant conversation context for restaurant staff to follow up on', 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        128
+      ],
+      "id": "af463277-4847-4101-b1aa-637a91bd68ec",
+      "name": "Human Support"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        -32,
+        272
+      ],
+      "id": "8dfc15c0-e136-4c7e-84d8-770420a02fdf",
+      "name": "Postgres Chat Memory"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Use this tool to fetch documents related to the restaurant knowledge database",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.3,
+      "position": [
+        -64,
+        384
+      ],
+      "id": "43e00386-f54b-418a-aa60-722f76a52788",
+      "name": "Postgres PGVector Store"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Kevin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Kevin",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kevin": {
+      "main": [
+        []
+      ]
+    },
+    "Notify Restaurant - New Booking": {
+      "ai_tool": [
+        [
+          {
+            "node": "Kevin",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Booking Confirmation to Customer": {
+      "ai_tool": [
+        [
+          {
+            "node": "Kevin",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Human Support": {
+      "ai_tool": [
+        [
+          {
+            "node": "Kevin",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Kevin",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres PGVector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "Kevin",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "nodeGroups": [],
+  "tags": []
+}
