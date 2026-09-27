@@ -54,6 +54,14 @@ Hi, I'm **John Kevin Morera**, an IT Support Engineer transitioning into workflo
 Workflow: `Source Documents → Embeddings (OpenAI) → Supabase Vector Store → RAG Retrieval`
 <img width="830" height="454" alt="Image" src="https://github.com/user-attachments/assets/c8df334e-62ae-485f-9e79-93ac05912690" />
 
+### Email Auto-Sort Agent
+- Monitors incoming emails in real time.
+- Uses an AI model to classify each email by category, sender intent, or priority.
+- Automatically applies labels or moves emails into the appropriate folders.
+- Reduces manual inbox triage and keeps important messages easy to find.
+
+Workflow: `Email Trigger → AI Classification → Label/Folder Routing`
+
 ## Skills & Technologies
 
 - n8n Workflow Automation
