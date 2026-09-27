@@ -41,7 +41,7 @@ Hi, I'm **John Kevin Morera**, an IT Support Engineer transitioning into workflo
 - Escalates to human support via email when requested or when the AI can't resolve the query.
 
 **Workflow:** `Chat Trigger → AI Agent → Knowledge Base Retrieval / Booking Collection → Gmail (Restaurant + Customer + Human Support)`
-
+<img width="865" height="635" alt="Image" src="https://github.com/user-attachments/assets/400d58ab-058e-4182-803b-2ae246b351fe" />
 ## Skills & Technologies
 
 - n8n Workflow Automation
