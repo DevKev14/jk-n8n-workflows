@@ -10,7 +10,6 @@ Hi, I'm **John Kevin Morera**, an IT Support Engineer transitioning into workflo
 | **Real Estate Lead Triage - Gmail to Slack** | Monitors Gmail, uses AI to classify and qualify real estate leads, filters irrelevant emails, and sends qualified leads to Slack. | n8n, Gmail, OpenAI GPT-4o-mini, Slack |
 | **AI Customer Support & Booking System (n8n)** | This project has two parts: a knowledge base pipeline that feeds restaurant info into a Supabase vector store, and a conversational AI agent that answers customer questions via RAG, handles bookings end-to-end, and automatically emails both the restaurant and the customer for every reservation — with a human-support escalation path built in. | n8n, OpenAI (chat + embeddings), Supabase (vector store), Gmail API. |
 ## Featured Projects
-
 ### Knowledge Base & RAG AI Agent
 
 - Automatically processes new and updated Google Drive documents.
@@ -42,6 +41,16 @@ Hi, I'm **John Kevin Morera**, an IT Support Engineer transitioning into workflo
 
 **Workflow:** `Chat Trigger → AI Agent → Knowledge Base Retrieval / Booking Collection → Gmail (Restaurant + Customer + Human Support)`
 <img width="865" height="635" alt="Image" src="https://github.com/user-attachments/assets/400d58ab-058e-4182-803b-2ae246b351fe" />
+
+### KB for Support and Booking Agent
+- Ingests restaurant knowledge (menu, hours, policies, FAQs) into a vector store.
+- Generates embeddings using OpenAI.
+- Stores and indexes the data in Supabase for fast semantic retrieval.
+- Powers the AI agent's RAG-based answers, keeping responses accurate and grounded.
+- Keeps the knowledge base easily updatable without touching the agent's core logic.
+  
+Workflow: `Source Documents → Embeddings (OpenAI) → Supabase Vector Store → RAG Retrieval`
+
 ## Skills & Technologies
 
 - n8n Workflow Automation
