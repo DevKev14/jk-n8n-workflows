@@ -61,6 +61,7 @@ Workflow: `Source Documents → Embeddings (OpenAI) → Supabase Vector Store �
 - Reduces manual inbox triage and keeps important messages easy to find.
 
 Workflow: `Email Trigger → AI Classification → Label/Folder Routing`
+<img width="1581" height="597" alt="Image" src="https://github.com/user-attachments/assets/ecb1df54-7597-4c1f-a7cf-1bcf513a5965" />
 
 ## Skills & Technologies
 
