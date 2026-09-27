@@ -50,6 +50,7 @@ Hi, I'm **John Kevin Morera**, an IT Support Engineer transitioning into workflo
 - Keeps the knowledge base easily updatable without touching the agent's core logic.
   
 Workflow: `Source Documents → Embeddings (OpenAI) → Supabase Vector Store → RAG Retrieval`
+<img width="830" height="454" alt="Image" src="https://github.com/user-attachments/assets/c8df334e-62ae-485f-9e79-93ac05912690" />
 
 ## Skills & Technologies
 
