@@ -1,0 +1,1111 @@
+{
+  "name": "Email Auto-Sort Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "custom",
+              "cronExpression": "*/15 * * * * "
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -432,
+        -96
+      ],
+      "id": "4b39da19-c631-4611-9797-45607c0801a8",
+      "name": "Gmail Trigger"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d87b7931-b5a9-4116-819d-ed8166bdfcd3",
+              "leftValue": "={{ $json.labelIds[0] }}",
+              "rightValue": "Label",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -208,
+        -96
+      ],
+      "id": "0dc87efa-b3df-47d0-91ce-3a4dce921cd2",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Topic: \ue085\ue085 $json.subject }}\nDescription: \ue085\ue085 $json.text }}\nSender: \ue085\ue085 $json.from.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "** Your Role **\nYou are an intelligent email assistant responsible for sorting incoming messages.\nYour task is to analyze the content, subject, and sender of each email and assign it to the appropriate categor\ny.\n** Categories **\nCategories for sorting:\n- priority: messages requiring immediate attention (from supervisors, clients)\n- business: correspondence related to current projects, contracts, meetings\n- newsletters: newsletter issues\n- administrative: invoices, contracts, formal documents\n- personal: private messages not related to work\n- notifications: messages from social media, Substack, Coinbase, YouTube\n- spam: unwanted messages, suspicious offers\n** Instructions **\nFor each email:\n\ue088 Analyze the content, subject, and sender\n\ue088 Assign it to the appropriate category\n\ue088 Add a label with the category\n\ue088 If you are unsure, do not label the message\n** Response Format **\nAlways return the result in JSON format:\n{\n\"email_label\": \"business\"\n}\nIMPORTANT \ue089 the response must always be in lowercase."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        16,
+        -96
+      ],
+      "id": "3e56fd0a-59e5-42fa-ab7d-99d45f40f46d",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        16,
+        160
+      ],
+      "id": "0e4e13ca-61b0-4c2b-a375-cd129d2cce0f",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\"email_label\": \"business\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        160,
+        144
+      ],
+      "id": "a074b557-995e-4505-bf7d-b79cb6c42496",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output.email_label }}",
+                    "rightValue": "priority",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "a8803870-c091-4647-abbe-a767d643fc09"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Priority"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "74944cfa-2927-4ad3-8652-cb006dfcb7f3",
+                    "leftValue": "={{ $json.output.email_label }}",
+                    "rightValue": "personal",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Personal"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "735061aa-c425-43c2-a39b-198589dbfabb",
+                    "leftValue": "={{ $json.output.email_label }}",
+                    "rightValue": "notifications",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Notifications"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "bce503c4-ed19-431c-8c0b-2e729fafad2c",
+                    "leftValue": "={{ $json.output.email_label }}",
+                    "rightValue": "administrative",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Administrative"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "ce959f2a-f74f-4510-ac44-8074aca3568b",
+                    "leftValue": "={{ $json.output.email_label }}",
+                    "rightValue": "newsletters",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Newsletter"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "f9e0663c-35d5-453e-bd25-ad0126b48ec5",
+                    "leftValue": "={{ $json.output.email_label }}",
+                    "rightValue": "business",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Business"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "d3bd92a1-9419-417e-86af-cdb18d940f5f",
+                    "leftValue": "={{ $json.output.email_label }}",
+                    "rightValue": "spam",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Spam"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        384,
+        -96
+      ],
+      "id": "41a9d450-2b5c-4e9e-8b86-3f5e7a717e25",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "SPAM"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        368
+      ],
+      "id": "5493b745-3f10-4f67-bfa9-f79633104645",
+      "name": "Spam"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('G$('Gmail Trigger').item.json.idmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_289914156641246237"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        208
+      ],
+      "id": "dc7e8c15-8294-494c-8919-38a9390fd791",
+      "name": "Business"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_8058691747840695103"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        48
+      ],
+      "id": "7c14c798-d10d-4ede-8c84-7d4c879631d6",
+      "name": "Newsletter"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_4489114381039433661"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        -96
+      ],
+      "id": "a0b36552-6806-4d79-9bab-6262da3f560b",
+      "name": "Administrative"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_6625855557309364537"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        -240
+      ],
+      "id": "36924521-c8fd-40e0-b4b8-9f4b62b4eaaa",
+      "name": "Notifications"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_5654213815388270308"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        -544
+      ],
+      "id": "6914393e-e777-44d8-98bc-0777a89bb1a2",
+      "name": "Business2"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_349360520810974279"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        -400
+      ],
+      "id": "804be5bc-cd78-4542-91f7-d3d92bac1467",
+      "name": "Personal"
+    },
+    {
+      "parameters": {
+        "content": "# Sort Incoming Emails",
+        "height": 1216,
+        "width": 1584,
+        "color": "#843939"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -640
+      ],
+      "id": "7fc7565a-ded5-4622-b12d-a6842c7ecfd5",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        1216,
+        -192
+      ],
+      "id": "4dd1a2a1-dfe9-4aa5-a85f-3ec437a1b214",
+      "name": "When clicking \u2018Test workflow\u2019"
+    },
+    {
+      "parameters": {
+        "content": "# Sort Old Emails",
+        "height": 1208,
+        "width": 1696,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1168,
+        -640
+      ],
+      "typeVersion": 1,
+      "id": "88881f23-14ae-45ca-8f6e-226624de202c",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 15,
+        "simple": false,
+        "filters": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1440,
+        -192
+      ],
+      "id": "8e16a8ce-3f65-4807-a230-18b3edb25a59",
+      "name": "Gmail1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Topic: {{ $json.subject }}\nDescription: {{ $json.text }}\nSender: {{ $json.from.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=** Your Role **\nYou are an intelligent email assistant responsible for sorting incoming messages. Your task is to analyze the content, subject, and sender of each email and assign it to the appropriate category.\n\n** Categories **\nCategories for sorting:\n\n- priority: messages requiring immediate attention (from supervisors, clients)\n- business: correspondence related to current projects, contracts, meetings\n- newsletters: newsletter issues\n- administrative: invoices, contracts, formal documents\n- personal: private messages not related to work\n- notifications: messages from social media, Substack, Coinbase, YouTube\n- spam: unwanted messages, suspicious offers\n\n** Instructions **\nFor each email:\n\n- Analyze the content, subject, and sender\n- Assign it to the appropriate category\n- Add a label with the category\n- If you are unsure, do not label the message\n\n** Response Format **\nAlways return the result in JSON format:\n\n{\n  \"email_label\": \"business\"\n}\n\nIMPORTANT \u2013 the response must always be in lowercase."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        1920,
+        -192
+      ],
+      "id": "a56afc1f-f76d-4ca5-9873-65384319bf2f",
+      "name": "Give a Label"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "84ec2be6-ad6b-4ad4-8f8b-d31fafbfad20",
+                    "leftValue": "={{ $json.output.email_label }}",
+                    "rightValue": "priority",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Priority"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "9b600943-3604-4851-b84d-4da0948da2ef",
+                    "leftValue": "={{ $json.output.email_label }}",
+                    "rightValue": "personal",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Personal"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "d7f28656-aeab-4b2f-bd32-6111cb56ecc1",
+                    "leftValue": "={{ $json.output.email_label }}",
+                    "rightValue": "notifications",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Notifications"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c14ca3c0-ef10-45b5-8acb-f0d0c1339624",
+                    "leftValue": "={{ $json.output.email_label }}",
+                    "rightValue": "newsletters",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Newsletter"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output.email_label }}",
+                    "rightValue": "business",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "2673ebe3-59ce-4105-9fe9-e4beeb8f3148"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Business"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f0f6a9a2-fff0-4e7b-aed5-49887cb511eb",
+                    "leftValue": "={{ $json.output.email_label }}",
+                    "rightValue": "administrative",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Administrative"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "617af759-fada-4a67-bc06-be2b0b40989b",
+                    "leftValue": "={{ $json.output.email_label }}",
+                    "rightValue": "spam",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Spam"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        2336,
+        -272
+      ],
+      "id": "31a81575-56fc-41dd-821c-4d43ae264eb7",
+      "name": "Switch2"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail1').item.json.id }}",
+        "labelIds": [
+          "Label_4489114381039433661"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2624,
+        192
+      ],
+      "id": "7ea15d9a-db75-481e-ae39-b424aff9cf8d",
+      "name": "Administrative2"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail1').item.json.id }}",
+        "labelIds": [
+          "Label_5654213815388270308"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2624,
+        -624
+      ],
+      "id": "5253b919-debe-43e9-a342-6aedf16f8b19",
+      "name": "Priority2"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail1').item.json.id }}",
+        "labelIds": [
+          "Label_8058691747840695103"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2624,
+        -128
+      ],
+      "id": "8c132d8e-d848-4616-97f0-2605c84d054d",
+      "name": "Newsletter2"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail1').item.json.id }}",
+        "labelIds": [
+          "Label_349360520810974279"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2624,
+        -464
+      ],
+      "id": "14710530-f9a8-4d07-b15b-823f59c37d1e",
+      "name": "Personal2"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail1').item.json.id }}",
+        "labelIds": [
+          "Label_6625855557309364537"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2624,
+        -304
+      ],
+      "id": "aed8bddb-e919-44c9-b41a-b3ef469b14a7",
+      "name": "Notifications2"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail1').item.json.id }}",
+        "labelIds": [
+          "SPAM"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2624,
+        352
+      ],
+      "id": "2ce09ba7-09ec-42bf-8fd7-6922280a37cb",
+      "name": "Spam1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6c287523-4ae2-43c4-8f9a-faf756f01855",
+              "leftValue": "={{ $json.labelIds[0] }}",
+              "rightValue": "Label",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        1664,
+        -192
+      ],
+      "id": "deb4c3b7-26b1-4c47-b04d-1d201de124d7",
+      "name": "Filter1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1888,
+        32
+      ],
+      "id": "3f75a90f-522c-4086-aa2f-73351cf496e3",
+      "name": "OpenAI Chat Model1"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"email_label\": \"business\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        2096,
+        32
+      ],
+      "id": "8b7d6e8c-fe06-43c1-b811-1dac0bbf6b21",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail1').item.json.id }}",
+        "labelIds": [
+          "Label_289914156641246237"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2624,
+        32
+      ],
+      "id": "638ca3d4-1274-4090-a25d-08ceafffc116",
+      "name": "Business3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Business2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Personal",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notifications",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Administrative",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Newsletter",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Business",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Spam",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking \u2018Test workflow\u2019": {
+      "main": [
+        [
+          {
+            "node": "Gmail1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail1": {
+      "main": [
+        [
+          {
+            "node": "Filter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Give a Label": {
+      "main": [
+        [
+          {
+            "node": "Switch2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch2": {
+      "main": [
+        [
+          {
+            "node": "Priority2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Personal2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notifications2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Newsletter2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Business3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Administrative2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Spam1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter1": {
+      "main": [
+        [
+          {
+            "node": "Give a Label",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Give a Label",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Give a Label",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "62066673-d232-4d22-9c79-5558361f80c6",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "id": "UajcFnxAXxbUkJkl",
+  "tags": []
+}
