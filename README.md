@@ -9,6 +9,8 @@ Hi, I'm **John Kevin Morera**, an IT Support Engineer transitioning into workflo
 | **Knowledge Base & RAG AI Agent** | Ingests Google Drive documents into Pinecone and uses an AI agent to answer questions using retrieved knowledge. | n8n, Google Drive, OpenAI, Pinecone |
 | **Real Estate Lead Triage - Gmail to Slack** | Monitors Gmail, uses AI to classify and qualify real estate leads, filters irrelevant emails, and sends qualified leads to Slack. | n8n, Gmail, OpenAI GPT-4o-mini, Slack |
 | **AI Customer Support & Booking System** | This project has two parts: a knowledge base pipeline that feeds restaurant info into a Supabase vector store, and a conversational AI agent that answers customer questions via RAG, handles bookings end-to-end, and automatically emails both the restaurant and the customer for every reservation — with a human-support escalation path built in. | n8n, OpenAI (chat + embeddings), Supabase (vector store), Gmail API. |
+| **Email Auto-Sort Agent** | Monitors an inbox, uses AI to classify incoming emails by category/priority, and automatically sorts them into the correct folders or labels — cutting down on manual inbox management. | n8n, Gmail/Outlook, OpenAI |
+
 ## Featured Projects
 ### Knowledge Base & RAG AI Agent
 
