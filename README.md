@@ -8,7 +8,7 @@ Hi, I'm **John Kevin Morera**, an IT Support Engineer transitioning into workflo
 |---|---|---|
 | **Knowledge Base & RAG AI Agent** | Ingests Google Drive documents into Pinecone and uses an AI agent to answer questions using retrieved knowledge. | n8n, Google Drive, OpenAI, Pinecone |
 | **Real Estate Lead Triage - Gmail to Slack** | Monitors Gmail, uses AI to classify and qualify real estate leads, filters irrelevant emails, and sends qualified leads to Slack. | n8n, Gmail, OpenAI GPT-4o-mini, Slack |
-
+| **AI Customer Support & Booking System (n8n)** | This project has two parts: a knowledge base pipeline that feeds restaurant info into a Supabase vector store, and a conversational AI agent that answers customer questions via RAG, handles bookings end-to-end, and automatically emails both the restaurant and the customer for every reservation — with a human-support escalation path built in. | n8n, OpenAI (chat + embeddings), Supabase (vector store), Gmail API. |
 ## Featured Projects
 
 ### Knowledge Base & RAG AI Agent
@@ -39,6 +39,29 @@ Hi, I'm **John Kevin Morera**, an IT Support Engineer transitioning into workflo
 - Pinecone
 - Gmail & Google Drive
 - Slack
+- API Integrations
+- Process Automation
+
+### AI Customer Support & Booking System (n8n)
+
+- Monitors incoming customer chat messages.
+- Uses GPT-4o-mini to answer restaurant FAQs via a Supabase-backed knowledge base (RAG).
+- Detects booking intent and collects customer name, email, party size, date/time, and special requests.
+- Sends a booking notification email to the restaurant automatically.
+- Sends a booking confirmation email to the customer automatically.
+- Escalates to human support via email when requested or when the AI can't resolve the query.
+
+**Workflow:** `Chat Trigger → AI Agent → Knowledge Base Retrieval / Booking Collection → Gmail (Restaurant + Customer + Human Support)`
+
+## Skills & Technologies
+
+- n8n Workflow Automation
+- AI Agents & Prompt Engineering
+- RAG & Vector Search
+- OpenAI
+- Supabase
+- Gmail Integration
+- Conversational Memory
 - API Integrations
 - Process Automation
 
