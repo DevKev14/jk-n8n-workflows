@@ -1,0 +1,1435 @@
+{
+  "name": "Dead Lead Reactivation Campaign",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds"
+            }
+          ]
+        }
+      },
+      "id": "3c1777be-a38c-46e7-983e-5ff2a0ba36c5",
+      "name": "Weekly Reactivation Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -4064,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "Lead Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "2f5b142a-22e4-475d-8168-fe445a40b242",
+      "name": "Get Lead Database",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -3680,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ DateTime.fromISO($json['Last Interaction Date']).toMillis() }}",
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              },
+              "rightValue": "={{ $now.minus({ days: 1 }).toMillis() }}",
+              "id": "66bb2f8a-c5c9-414a-b920-b8a5ddcddf86"
+            },
+            {
+              "leftValue": "={{ $json['Sales Status'] }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              },
+              "rightValue": "Converted to Sale",
+              "id": "5bc7ffb4-71f1-4c62-93a6-d51a44105adc"
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "f3c5632d-dd94-4d6e-90e0-64db2e710fbc",
+      "name": "Filter Dead Leads",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -3680,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Write the message for this lead.\nEmail: {{ $json['Email'] }}\nChannel: {{ $json['Channel Dropdown'] }}\nFirst Name: {{ $json['First Name'] }}\nCompany: {{ $json['Company'] }}\nIndustry: {{ $json['Industry'] }}\nPrevious Conversations: {{ $json['Previous Conversations'] }}\nLast Interaction Date: {{ $json['Last Interaction Date'] }}\nKnown Objections or Concerns: {{ $json['Known Objections or Concerns'] }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an expert CRM Lead Recovery Specialist.\n\nYour task is to analyze an inactive sales lead, classify them into the most appropriate re-engagement segment, and write a high-converting, personalized outreach message for the channel you are given.\n\n---\n\n## 1. CHANNEL (ALREADY DECIDED - DO NOT CHANGE IT)\n\nThe lead data includes a \"Channel\" line that is either \"email\" or \"sms\". Never choose a different channel. Return that same value in the \"channel\" field.\n\n- If Channel is \"email\": keep the message body under 120 words. Extract a concise, professional subject line and put it in the \"subject\" field. The \"message\" field should contain ONLY the body (no subject line in it).\n- If Channel is \"sms\": keep the message STRICTLY under 400 characters. Leave the \"subject\" field EMPTY. Put the full SMS text in the \"message\" field.\n- If Channel is anything else, treat it as email.\n\n---\n\n## 2. SEGMENTATION CLASSIFICATION\n\nClassify the lead into exactly one of the following:\n\n- warm_stalled: Showed strong initial engagement or meetings, then went quiet. Focus: Restart conversation and remove friction.\n- price_sensitive: Expressed budget concerns, competitor pricing, or discount requests. Focus: Emphasize value, ROI, and payment flexibility.\n- wrong_timing: Indicated bandwidth/resource constraints or asked to reconnect later. Focus: Check gently if circumstances or priorities have shifted.\n- cold: Minimal engagement or unverified interest. Focus: Spark curiosity with a low-friction reconnection touchpoint.\n\n---\n\n## 3. COPYWRITING RULES\n\n- Tone: Warm, human, conversational, low-pressure, and professional.\n- Avoid: Generic sales cliches, pushy language, or artificial urgency.\n- Strategy: Reference specific details from prior interactions and include exactly ONE clear, low-friction call to action (e.g., \"Worth a brief chat this week?\").\n- Always Have the Best Regards, ABC Company at the bottom after making message body this will act as a signature.\n- If Channel = \"email\": Output a label field with value: \"Email-Campaign\"\n\n---\n\n## 4. OUTPUT FORMAT\n\nRespond ONLY with a valid JSON object matching this structure. Do not include markdown commentary or extra explanation.\n\n{\n  \"email\": \"lead@company.com\",\n  \"segment\": \"warm_stalled | price_sensitive | wrong_timing | cold\",\n  \"confidence_score\": 0.95,\n  \"channel\": \"email | sms\",\n  \"channel_dropdown\": \"email | sms\",\n  \"subject\": \"Compelling subject line (empty for SMS)\",\n  \"reasoning\": \"Brief explanation of the chosen segment.\",\n  \"message\": \"Personalized re-engagement message body only (no subject for SMS).\"\n}"
+        }
+      },
+      "id": "1688fce4-adbc-4912-9538-0bba5ca815ec",
+      "name": "Segment & Personalize Message",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -3136,
+        -336
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "id": "4ae0c7c5-55e8-4d1c-818e-fa1f696be9de",
+      "name": "Segmentation Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -3136,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "={\n  \"type\": \"object\",\n  \"properties\": {\n    \"email\": {\n      \"type\": \"string\",\n      \"description\": \"Email address of the lead.\"\n    },\n    \"segment\": {\n      \"type\": \"string\",\n      \"enum\": [\"warm_stalled\", \"price_sensitive\", \"wrong_timing\", \"cold\"],\n      \"description\": \"Classify into exactly one segment based on lead history: warm_stalled, price_sensitive, wrong_timing, or cold.\"\n    },\n    \"confidence_score\": {\n      \"type\": \"number\",\n      \"minimum\": 0,\n      \"maximum\": 1,\n      \"description\": \"Confidence score of the segment classification between 0.0 and 1.0.\"\n    },\n    \"channel\": {\n      \"type\": \"string\",\n      \"enum\": [\"email\", \"sms\"],\n      \"description\": \"The determined or provided communication channel ('email' or 'sms').\"\n    },\n    \"channel_dropdown\": {\n      \"type\": \"string\",\n      \"enum\": [\"email\", \"sms\"],\n      \"description\": \"Channel dropdown field - mirror of the chosen communication channel ('email' or 'sms').\"\n    },\n    \"label\": {\n      \"type\": \"string\",\n      \"description\": \"Set to 'Email-Campaign' if channel is email. Leave empty or null if channel is sms.\"\n    },\n    \"subject\": {\n      \"type\": \"string\",\n      \"description\": \"Email subject line tailored to the lead and segment. Leave as an empty string if channel is sms.\"\n    },\n    \"reasoning\": {\n      \"type\": \"string\",\n      \"description\": \"Brief explanation of the chosen segment.\"\n    },\n    \"message\": {\n      \"type\": \"string\",\n      \"description\": \"Personalized re-engagement message body only. Ends with 'Best Regards, ABC Company'. Do NOT include the subject line inside this message field. If email, keep body under 120 words. If sms, keep message strictly under 400 characters.\"\n    }\n  },\n  \"required\": [\n    \"email\",\n    \"segment\",\n    \"confidence_score\",\n    \"channel\",\n    \"channel_dropdown\",\n    \"subject\",\n    \"reasoning\",\n    \"message\"\n  ]\n}"
+      },
+      "id": "24f036a8-c6c8-481c-9af2-45d67fa3bece",
+      "name": "Segmentation Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -2992,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output.channel }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "email",
+                    "id": "9d98cf76-58a3-4e3a-b30d-881dcf98f587"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Email_Campaign"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Resolve Channel').item.json.channel }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "sms",
+                    "id": "32e88a52-8777-4f87-a1a8-b1e573bfe7a8"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "sms"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Unmatched"
+        }
+      },
+      "id": "f6d2639c-c913-4c56-99d9-18b7230b5b2e",
+      "name": "Route by Channel",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -2656,
+        -352
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "lead_contact",
+              "value": "={{ $('Filter Dead Leads').item.json.Email ?? $('Filter Dead Leads').item.json.email ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a2",
+              "name": "channel",
+              "value": "email",
+              "type": "string"
+            },
+            {
+              "id": "a3",
+              "name": "message",
+              "value": "={{ $('Segment & Personalize Message').item.json.output.message }}",
+              "type": "string"
+            },
+            {
+              "id": "a4",
+              "name": "status",
+              "value": "sent",
+              "type": "string"
+            },
+            {
+              "id": "a5",
+              "name": "sent_at",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "060a7e13-ae21-485e-b047-cae6cab02246",
+      "name": "Prepare Email Log Entry",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -1936,
+        -368
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "Email Logs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $('Resolve Channel').item.json['First Name'] }}",
+            "Time Sent": "={{ $json.sent_at }}",
+            "Message": "={{ $json.message }}",
+            "Phone Number": "={{ $('Resolve Channel').item.json['Phone Number'] }}",
+            "Email": "={{ $('Filter Dead Leads').item.json['Email Address'] }}",
+            "Sale Status": "={{ $('Resolve Channel').item.json['Sales Status'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Time Sent",
+              "displayName": "Time Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Sale Status",
+              "displayName": "Sale Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "c2712a2f-ae38-426b-ad9e-d008a473cc45",
+      "name": "Log Email Attempt",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1744,
+        -368
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "lead_contact",
+              "value": "={{ $('Filter Dead Leads').item.json.Phone ?? $('Filter Dead Leads').item.json.phone ?? $('Filter Dead Leads').item.json['Phone Number'] ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a2",
+              "name": "channel",
+              "value": "sms",
+              "type": "string"
+            },
+            {
+              "id": "a3",
+              "name": "message",
+              "value": "={{ $('Segment & Personalize Message').item.json.output.message }}",
+              "type": "string"
+            },
+            {
+              "id": "a4",
+              "name": "status",
+              "value": "sent",
+              "type": "string"
+            },
+            {
+              "id": "a5",
+              "name": "sent_at",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fe06f990-aecf-4507-b0dd-ac5fb205a4fe",
+      "name": "Prepare SMS Log Entry",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -2160,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "Log SMS Attempt",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $('Send Mock SMS').item.json['Lead Name'] }}",
+            "Time Sent": "={{ $('Send Mock SMS').item.json.Timestamp }}",
+            "Phone Number": "={{ $('Send Mock SMS').item.json.Phone }}",
+            "Segment": "={{ $('Send Mock SMS').item.json.Status }}",
+            "Message": "={{ $json.message }}",
+            "Status": "={{ $json.status }}",
+            "Sales Status": "={{ $('Resolve Channel').item.json['Sales Status'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Time Sent",
+              "displayName": "Time Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Segment",
+              "displayName": "Segment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sales Status",
+              "displayName": "Sales Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "af78a6fa-59fd-45fd-b037-e1bb998523d5",
+      "name": "Log SMS Attempt",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1872,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "lead_contact",
+              "value": "={{ $('Filter Dead Leads').item.json.Email ?? $('Filter Dead Leads').item.json.email ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a2",
+              "name": "channel",
+              "value": "={{ $json.output.channel }}",
+              "type": "string"
+            },
+            {
+              "id": "a3",
+              "name": "message",
+              "value": "Skipped - no valid channel resolved",
+              "type": "string"
+            },
+            {
+              "id": "a4",
+              "name": "status",
+              "value": "skipped",
+              "type": "string"
+            },
+            {
+              "id": "a5",
+              "name": "sent_at",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "045ee60d-9054-4308-8c04-e27a82228a95",
+      "name": "Prepare Skipped Log Entry",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -2432,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "Log Skipped Attempt",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "7dc068bc-da35-436b-8f11-f8b7528f4c90",
+      "name": "Log Skipped Attempt",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -2192,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b1",
+              "name": "fromEmail",
+              "value": "={{ typeof $json.from === 'string' ? ($json.from.match(/<(.+)>/) ? $json.from.match(/<(.+)>/)[1] : $json.from) : $json.from.value[0].address }}",
+              "type": "string"
+            },
+            {
+              "id": "b2",
+              "name": "subject",
+              "value": "={{ $json.subject }}",
+              "type": "string"
+            },
+            {
+              "id": "b3",
+              "name": "bodyText",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "b4",
+              "name": "messageId",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "10e8e3e4-f20b-4d43-9662-1c2b4ff71fd3",
+      "name": "Normalize Email Reply",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -3200,
+        752
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.bodyText }}",
+        "options": {
+          "systemMessage": "You are continuing a re-engagement conversation with a previously dead sales lead who just replied by email. Be warm, concise, and helpful. Answer their question and gently move the conversation toward booking a call, without being pushy."
+        }
+      },
+      "id": "ece70a0b-d834-4d3f-9127-436a49330467",
+      "name": "Continue Email Conversation",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -2976,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.5
+        }
+      },
+      "id": "69ab9ef8-e3f6-4a9d-9b64-fda02bf88b82",
+      "name": "Email Reply Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -2976,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Normalize Email Reply').item.json.fromEmail }}",
+        "contextWindowLength": 10
+      },
+      "id": "2e896fdd-0979-4db0-89af-0a48ca176f22",
+      "name": "Email Conversation Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        -2880,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Normalize Email Reply').item.json.fromEmail }}",
+        "subject": "=Re: {{ $('Normalize Email Reply').item.json.subject }}",
+        "emailType": "text",
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "id": "46840098-f6aa-4456-8700-996e32e589fb",
+      "name": "Send Email Reply",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -2624,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}"
+      },
+      "id": "a5275bdf-1631-4d26-bc5b-295c8d373cc3",
+      "name": "Mark Email as Handled",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -2400,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c1",
+              "name": "fromPhone",
+              "type": "string",
+              "value": "={{ $json.Phone ?? $json.From ?? '' }}"
+            },
+            {
+              "id": "c2",
+              "name": "messageText",
+              "type": "string",
+              "value": "={{ $json.Message ?? $json.Body ?? '' }}"
+            },
+            {
+              "id": "c3",
+              "name": "leadName",
+              "type": "string",
+              "value": "={{ $json['Lead Name'] ?? '' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fa45051d-02d5-4a50-bf2b-6913a4f4f6de",
+      "name": "Normalize SMS Reply",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -3200,
+        1216
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.messageText }}",
+        "options": {
+          "systemMessage": "You are continuing a re-engagement text conversation with a previously dead sales lead. Keep replies under 300 characters, warm and conversational, and gently guide toward booking a call."
+        }
+      },
+      "id": "25da2a33-bb0f-400c-8dd6-e69f6497281f",
+      "name": "Continue SMS Conversation",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -2976,
+        1216
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.5
+        }
+      },
+      "id": "551b6863-169a-43e7-9afc-74fd080f6cdd",
+      "name": "SMS Reply Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -2960,
+        1440
+      ]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Normalize SMS Reply').item.json.fromPhone }}",
+        "contextWindowLength": 10
+      },
+      "id": "412740dc-e192-49e9-99e0-85a8f26fb61c",
+      "name": "SMS Conversation Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        -2832,
+        1440
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "SMS outbook",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=0"
+        },
+        "columns": {
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false,
+          "mappingMode": "defineBelow",
+          "matchingColumns": [],
+          "schema": [
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Timestamp",
+              "id": "Timestamp",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Lead Name",
+              "id": "Lead Name",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Phone",
+              "id": "Phone",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Message",
+              "id": "Message",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Status",
+              "id": "Status",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Simulated ID",
+              "id": "Simulated ID",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Type",
+              "id": "Type",
+              "required": false,
+              "type": "string"
+            }
+          ],
+          "value": {
+            "Lead Name": "={{ $('Normalize SMS Reply').item.json.leadName }}",
+            "Message": "={{ $json.output }}",
+            "Phone": "={{ $('Normalize SMS Reply').item.json.fromPhone }}",
+            "Simulated ID": "={{ 'SIM_' + Date.now() + '_' + $itemIndex }}",
+            "Status": "simulated",
+            "Timestamp": "={{ $now.toISO() }}",
+            "Type": "reply"
+          }
+        },
+        "options": {}
+      },
+      "id": "0ff3413f-baa7-4ccb-9f77-4ac46e571a26",
+      "name": "Write SMS Reply to Outbox",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -2624,
+        1216
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -3504,
+        -352
+      ],
+      "id": "399f9410-4374-4c20-ac0e-04c70c232b23",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "rc1",
+              "name": "channel",
+              "type": "string",
+              "value": "={{ (() => { const pref = String($json['Channel Dropdown'] || '').trim().toLowerCase(); const email = String($json['Email Address'] || '').trim(); const phone = String($json['Phone Number'] || '').trim(); if (pref === 'sms' && phone) return 'sms'; if (pref === 'email' && email) return 'email'; if (email) return 'email'; if (phone) return 'sms'; return 'none'; })() }}"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "916f5337-c1d9-429c-bdde-072153082ea3",
+      "name": "Resolve Channel",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -3296,
+        -336
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Resolve Channel').item.json['Email Address'] }}",
+        "subject": "={{ $('Segment & Personalize Message').item.json.output.subject }}",
+        "emailType": "text",
+        "message": "={{ $('Segment & Personalize Message').item.json.output.message }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -2368,
+        -368
+      ],
+      "id": "d1e9659e-91e3-4fde-bd6d-17f6c2fa0c62",
+      "name": "Send a message"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Send a message').item.json.id }}",
+        "labelIds": [
+          "YOUR_GMAIL_LABEL_ID"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -2160,
+        -368
+      ],
+      "id": "1dd657be-0625-4302-90d9-4239dc725f45",
+      "name": "Add label to message"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "maxResults": 50,
+        "filters": {
+          "q": "label:business",
+          "readStatus": "unread"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -3584,
+        752
+      ],
+      "id": "b1442742-95ec-4f9c-aac7-4b0a0bc87548",
+      "name": "Gmail Trigger"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "com.twilio.messaging.inbound-message.received"
+        ]
+      },
+      "type": "n8n-nodes-base.twilioTrigger",
+      "typeVersion": 1,
+      "position": [
+        -3632,
+        1216
+      ],
+      "id": "318de298-c5e7-4f92-a954-12b9511036af",
+      "name": "Twilio Trigger"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        -2368,
+        -128
+      ],
+      "id": "eed8d81f-e060-48ac-a5d0-07da13d2415b",
+      "name": "Send an SMS/MMS/WhatsApp message"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Weekly Reactivation Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Lead Database",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Lead Database": {
+      "main": [
+        [
+          {
+            "node": "Filter Dead Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Dead Leads": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Segment & Personalize Message": {
+      "main": [
+        [
+          {
+            "node": "Route by Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Segmentation Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Segment & Personalize Message",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Segmentation Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Segment & Personalize Message",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Channel": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send an SMS/MMS/WhatsApp message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Skipped Log Entry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Email Log Entry": {
+      "main": [
+        [
+          {
+            "node": "Log Email Attempt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare SMS Log Entry": {
+      "main": [
+        [
+          {
+            "node": "Log SMS Attempt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Skipped Log Entry": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Log Skipped Attempt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Email Reply": {
+      "main": [
+        [
+          {
+            "node": "Continue Email Conversation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Continue Email Conversation": {
+      "main": [
+        [
+          {
+            "node": "Send Email Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Reply Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Continue Email Conversation",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Conversation Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Continue Email Conversation",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email Reply": {
+      "main": [
+        [
+          {
+            "node": "Mark Email as Handled",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize SMS Reply": {
+      "main": [
+        [
+          {
+            "node": "Continue SMS Conversation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Continue SMS Conversation": {
+      "main": [
+        [
+          {
+            "node": "Write SMS Reply to Outbox",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SMS Reply Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Continue SMS Conversation",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SMS Conversation Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Continue SMS Conversation",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Email Attempt": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log SMS Attempt": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Skipped Attempt": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Resolve Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve Channel": {
+      "main": [
+        [
+          {
+            "node": "Segment & Personalize Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Add label to message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label to message": {
+      "main": [
+        [
+          {
+            "node": "Prepare Email Log Entry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize Email Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Twilio Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize SMS Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send an SMS/MMS/WhatsApp message": {
+      "main": [
+        [
+          {
+            "node": "Prepare SMS Log Entry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [
+    {
+      "id": "eee2efcd-049e-4302-b147-b7744c3d56f0",
+      "name": "Email Reply Handling",
+      "nodeIds": [
+        "10e8e3e4-f20b-4d43-9662-1c2b4ff71fd3",
+        "69ab9ef8-e3f6-4a9d-9b64-fda02bf88b82",
+        "2e896fdd-0979-4db0-89af-0a48ca176f22",
+        "ece70a0b-d834-4d3f-9127-436a49330467",
+        "46840098-f6aa-4456-8700-996e32e589fb",
+        "a5275bdf-1631-4d26-bc5b-295c8d373cc3"
+      ],
+      "description": "Watches for lead replies by email, continues the conversation with memory, replies, then marks the email handled."
+    },
+    {
+      "id": "1f0ef437-402f-4cfa-b9df-7b4fcd6d5c5a",
+      "name": "SMS Reply Handling",
+      "nodeIds": [
+        "fa45051d-02d5-4a50-bf2b-6913a4f4f6de",
+        "551b6863-169a-43e7-9afc-74fd080f6cdd",
+        "412740dc-e192-49e9-99e0-85a8f26fb61c",
+        "25da2a33-bb0f-400c-8dd6-e69f6497281f",
+        "0ff3413f-baa7-4ccb-9f77-4ac46e571a26"
+      ],
+      "description": "Watches the SMS_Inbox tab for replies, continues the conversation with memory, and writes the reply to the outbox."
+    }
+  ],
+  "tags": []
+}
