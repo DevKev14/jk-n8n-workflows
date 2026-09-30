@@ -86,6 +86,7 @@ Email replies (inbound)
 - Send Email Reply sends the response from the same Gmail account.
 - Mark Email as Handled marks the message as read so it is not processed twice.
   Workflow: `Gmail Trigger → AI Conversation → Send Reply & Mark as Handled`
+  <img width="966" height="400" alt="Image" src="https://github.com/user-attachments/assets/44ba9eca-efad-4f8b-94be-debc991dcf3d" />
 
 SMS replies (inbound)
 - Twilio Trigger fires when a lead texts back (inbound message received).
