@@ -104,9 +104,17 @@ SMS replies (inbound)
 - OpenAI
 - Supabase
 - Gmail Integration
+- Google Sheets Integration
+- Twilio SMS Integration
 - Conversational Memory
 - API Integrations
 - Process Automation
+- AI Lead Segmentation & Classification
+- Structured Output Parsing (JSON Schema)
+- Scheduled Workflows & Batch Processing
+- Conditional Routing & Filtering
+- Multi-Channel Outreach (Email & SMS)
+- Email & SMS Reply Automation
 
 ## About Me
 
