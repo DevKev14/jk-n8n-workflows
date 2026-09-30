@@ -10,7 +10,7 @@ Hi, I'm **John Kevin Morera**, an IT Support Engineer transitioning into workflo
 | **Real Estate Lead Triage - Gmail to Slack** | Monitors Gmail, uses AI to classify and qualify real estate leads, filters irrelevant emails, and sends qualified leads to Slack. | n8n, Gmail, OpenAI GPT-4o-mini, Slack |
 | **AI Customer Support & Booking System** | This project has two parts: a knowledge base pipeline that feeds restaurant info into a Supabase vector store, and a conversational AI agent that answers customer questions via RAG, handles bookings end-to-end, and automatically emails both the restaurant and the customer for every reservation — with a human-support escalation path built in. | n8n, OpenAI (chat + embeddings), Supabase (vector store), Gmail API. |
 | **Email Auto-Sort Agent** | Monitors an inbox, uses AI to classify incoming emails by category/priority, and automatically sorts them into the correct folders or labels — cutting down on manual inbox management. | n8n, Gmail/Outlook, OpenAI |
-| **Dead Lead Reactivation Campaign** | An n8n workflow that automatically re-engages inactive sales leads. Every week it pulls dead leads from a Google Sheets CRM, uses AI to segment each lead and write a personalized outreach message, sends it through the right channel, and handles email replies with an AI-driven conversation loop. | n8n, Gmail/Outlook, OpenAI |
+
 ## Featured Projects
 ### Knowledge Base & RAG AI Agent
 
