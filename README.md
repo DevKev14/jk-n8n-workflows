@@ -95,8 +95,7 @@ SMS replies (inbound)
 - Send SMS Reply sends the response back through Twilio.
 - Write SMS Reply to Outbox records the reply in Google Sheets for tracking.
   Workflow: `Twilio Trigger → AI Conversation → Send SMS Reply & Log`
-
-
+  <img width="1046" height="462" alt="Image" src="https://github.com/user-attachments/assets/7418cfd0-080b-4fdc-bfdd-db03ee95f7da" />
 
 ## Skills & Technologies
 
