@@ -76,7 +76,7 @@ Campaign (outbound)
 - Email path: sends the email with Gmail, applies the Business label, and logs the attempt.
 - SMS path: sends the text through Twilio and logs the attempt.
 - Skipped path: leads that can't be contacted are logged instead of dropped.
-  Workflow: `Weekly Schedule Trigger → Lead Database Filter → AI Segmentation & Personalization → Channel Routing (Email / SMS / Skipped)`
+Workflow: `Weekly Schedule Trigger → Lead Database Filter → AI Segmentation & Personalization → Channel Routing (Email / SMS / Skipped)`
   <img width="1527" height="525" alt="Image" src="https://github.com/user-attachments/assets/def8d75b-b8a4-4c43-b0fe-3fb702ad31ae" />
 
 Email replies (inbound)
@@ -85,7 +85,7 @@ Email replies (inbound)
 - Continue Email Conversation is an AI agent with conversation memory that writes a context-aware response.
 - Send Email Reply sends the response from the same Gmail account.
 - Mark Email as Handled marks the message as read so it is not processed twice.
-  Workflow: `Gmail Trigger → AI Conversation → Send Reply & Mark as Handled`
+Workflow: `Gmail Trigger → AI Conversation → Send Reply & Mark as Handled`
   <img width="966" height="400" alt="Image" src="https://github.com/user-attachments/assets/44ba9eca-efad-4f8b-94be-debc991dcf3d" />
 
 SMS replies (inbound)
@@ -94,7 +94,7 @@ SMS replies (inbound)
 - Continue SMS Conversation is an AI agent with its own conversation memory that writes a short, SMS-appropriate reply.
 - Send SMS Reply sends the response back through Twilio.
 - Write SMS Reply to Outbox records the reply in Google Sheets for tracking.
-  Workflow: `Twilio Trigger → AI Conversation → Send SMS Reply & Log`
+Workflow: `Twilio Trigger → AI Conversation → Send SMS Reply & Log`
   <img width="1046" height="462" alt="Image" src="https://github.com/user-attachments/assets/7418cfd0-080b-4fdc-bfdd-db03ee95f7da" />
 
 ## Skills & Technologies
