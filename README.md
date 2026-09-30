@@ -77,6 +77,7 @@ Campaign (outbound)
 - SMS path: sends the text through Twilio and logs the attempt.
 - Skipped path: leads that can't be contacted are logged instead of dropped.
   Workflow: `Weekly Schedule Trigger → Lead Database Filter → AI Segmentation & Personalization → Channel Routing (Email / SMS / Skipped)`
+  <img width="1527" height="525" alt="Image" src="https://github.com/user-attachments/assets/def8d75b-b8a4-4c43-b0fe-3fb702ad31ae" />
 
 Email replies (inbound)
 - Gmail Trigger polls for unread emails with the Business label. A Gmail filter applies that label to replies from leads as they arrive.
